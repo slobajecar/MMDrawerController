@@ -21,12 +21,16 @@
 
 #import "MMDrawerBarButtonItem.h"
 
+#define Rgb2UIColor(r, g, b)  [UIColor colorWithRed:((r) / 255.0) green:((g) / 255.0) blue:((b) / 255.0) alpha:1.0]
+
 @interface MMDrawerMenuButtonView : UIButton
 @property (nonatomic,strong) UIColor * menuButtonNormalColor;
 @property (nonatomic,strong) UIColor * menuButtonHighlightedColor;
 
 @property (nonatomic,strong) UIColor * shadowNormalColor;
 @property (nonatomic,strong) UIColor * shadowHighlightedColor;
+@property (nonatomic,strong) UIColor * notificationCircleNormalColor;
+@property (nonatomic,strong) UIColor * notificationTextNormalColor;
 
 -(UIColor *)menuButtonColorForState:(UIControlState)state;
 -(void)setMenuButtonColor:(UIColor *)color forState:(UIControlState)state;
@@ -38,7 +42,7 @@
 
 @implementation MMDrawerMenuButtonView
 
--(instancetype)initWithFrame:(CGRect)frame{
+-(id)initWithFrame:(CGRect)frame{
     self = [super initWithFrame:frame];
     if(self){
         [self setMenuButtonNormalColor:[[UIColor whiteColor] colorWithAlphaComponent:0.9f]];
@@ -125,7 +129,6 @@
     //// Color Declarations
     UIColor*  buttonColor = [self menuButtonColorForState:self.state];
     UIColor*  shadowColor = [self shadowColorForState:self.state];
-
     
     //// Shadow Declarations
     UIColor* shadow =  shadowColor;
@@ -210,7 +213,8 @@
         UIGraphicsBeginImageContextWithOptions( CGSizeMake(26, 26), NO, 0 );
         
         //// Color Declarations
-        UIColor* fillColor = [UIColor whiteColor];
+		UIColor* fillColor = [UIColor whiteColor];
+		UIColor* notificationCircleColor = [UIColor redColor];
         
         //// Frames
         CGRect frame = CGRectMake(0, 0, 26, 26);
@@ -219,7 +223,7 @@
         UIBezierPath* bottomBarPath = [UIBezierPath bezierPathWithRect: CGRectMake(CGRectGetMinX(frame) + floor((CGRectGetWidth(frame) - 16) * 0.50000 + 0.5), CGRectGetMinY(frame) + floor((CGRectGetHeight(frame) - 1) * 0.72000 + 0.5), 16, 1)];
         [fillColor setFill];
         [bottomBarPath fill];
-        
+		
         
         //// Middle Bar Drawing
         UIBezierPath* middleBarPath = [UIBezierPath bezierPathWithRect: CGRectMake(CGRectGetMinX(frame) + floor((CGRectGetWidth(frame) - 16) * 0.50000 + 0.5), CGRectGetMinY(frame) + floor((CGRectGetHeight(frame) - 1) * 0.48000 + 0.5), 16, 1)];
@@ -231,14 +235,14 @@
         UIBezierPath* topBarPath = [UIBezierPath bezierPathWithRect: CGRectMake(CGRectGetMinX(frame) + floor((CGRectGetWidth(frame) - 16) * 0.50000 + 0.5), CGRectGetMinY(frame) + floor((CGRectGetHeight(frame) - 1) * 0.24000 + 0.5), 16, 1)];
         [fillColor setFill];
         [topBarPath fill];
-        
-        drawerButtonImage = UIGraphicsGetImageFromCurrentImageContext();
+		
+        drawerButtonImage = [UIGraphicsGetImageFromCurrentImageContext() imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     });
     
     return drawerButtonImage;
 }
 
--(instancetype)initWithTarget:(id)target action:(SEL)action{
+-(id)initWithTarget:(id)target action:(SEL)action{
     
     if((floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_6_1)){
         return [self initWithImage:[self.class drawerButtonItemImage]
@@ -259,7 +263,7 @@
     }
 }
 
--(instancetype)initWithCoder:(NSCoder *)aDecoder{
+-(id)initWithCoder:(NSCoder *)aDecoder{
     // non-ideal way to get the target/action, but it works
     UIBarButtonItem* barButtonItem = [[UIBarButtonItem alloc] initWithCoder: aDecoder];
     return [self initWithTarget:barButtonItem.target action:barButtonItem.action];
@@ -297,6 +301,56 @@
     if([self.buttonView respondsToSelector:@selector(setTintColor:)]){
         [self.buttonView setTintColor:tintColor];
     }
+}
+
+-(void)setNotificationBubbleHidden:(BOOL)isHidden {
+	
+	static UIImage *drawerButtonImage = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		
+		UIGraphicsBeginImageContextWithOptions( CGSizeMake(26, 26), NO, 0 );
+		
+		//// Color Declarations
+		UIColor* fillColor = [UIColor whiteColor];
+		UIColor* notificationCircleColor = Rgb2UIColor(0xFD, 0x8A, 0x00);
+		
+		//// Frames
+		CGRect frame = CGRectMake(0, 0, 26, 26);
+		
+		//// Bottom Bar Drawing
+		UIBezierPath* bottomBarPath = [UIBezierPath bezierPathWithRect: CGRectMake(CGRectGetMinX(frame) + floor((CGRectGetWidth(frame) - 16) * 0.50000 + 0.5), CGRectGetMinY(frame) + floor((CGRectGetHeight(frame) - 1) * 0.72000 + 0.5), 16, 1)];
+		[fillColor setFill];
+		[bottomBarPath fill];
+		
+		
+		//// Middle Bar Drawing
+		UIBezierPath* middleBarPath = [UIBezierPath bezierPathWithRect: CGRectMake(CGRectGetMinX(frame) + floor((CGRectGetWidth(frame) - 16) * 0.50000 + 0.5), CGRectGetMinY(frame) + floor((CGRectGetHeight(frame) - 1) * 0.48000 + 0.5), 16, 1)];
+		[fillColor setFill];
+		[middleBarPath fill];
+		
+		
+		//// Top Bar Drawing
+		UIBezierPath* topBarPath = [UIBezierPath bezierPathWithRect: CGRectMake(CGRectGetMinX(frame) + floor((CGRectGetWidth(frame) - 16) * 0.50000 + 0.5), CGRectGetMinY(frame) + floor((CGRectGetHeight(frame) - 1) * 0.24000 + 0.5), 16, 1)];
+		[fillColor setFill];
+		[topBarPath fill];
+		
+		//// Notification Drawing
+		if (!isHidden) {
+			CGPoint notificationCenter = CGPointMake(CGRectGetMinX(frame) + floor((CGRectGetWidth(frame) - 16) * 0.50000 + 0.5)+15, CGRectGetMinY(frame) + floor((CGRectGetHeight(frame) - 1) * 0.24000 + 0.5));
+			UIBezierPath* notificationCircle = [UIBezierPath bezierPathWithArcCenter:notificationCenter radius:5.0f startAngle:0 endAngle:2*M_PI clockwise:YES];
+			
+			[notificationCircleColor setStroke];
+			[notificationCircleColor setFill];
+			
+			[notificationCircle fill];
+			[notificationCircle stroke];
+		}
+		
+		drawerButtonImage = [UIGraphicsGetImageFromCurrentImageContext() imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+	});
+	
+	self.image = drawerButtonImage;
 }
 
 @end

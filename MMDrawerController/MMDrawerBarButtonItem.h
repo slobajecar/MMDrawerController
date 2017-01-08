@@ -38,7 +38,7 @@
  
  @return The newly-initialized bar button item.
  */
--(instancetype)initWithTarget:(id)target action:(SEL)action;
+-(id)initWithTarget:(id)target action:(SEL)action;
 
 /**
  Returns the current color of the menu button for the state requested. This property is deprecated in iOS 7.0. Use `tintColor` instead.
@@ -73,5 +73,14 @@
  @param state The state to set the color for.
  */
 -(void)setShadowColor:(UIColor *)color forState:(UIControlState)state __attribute__((deprecated("Shadow is no longer supported")));
+
+/**
+ Hides or shows notification bubble on top of the menu icon.
+ 
+ @param isHidden YES to hide the bubble, NO to show it.
+ 
+ @return Nothing.
+ */
+-(void)setNotificationBubbleHidden:(BOOL)isHidden;
 
 @end
